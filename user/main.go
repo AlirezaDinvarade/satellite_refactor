@@ -1,16 +1,25 @@
 package main
 
 import (
-	"fmt"
-	"net/http"
+	"log"
+	"satellite/user/models"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/joho/godotenv"
 )
 
 func main() {
-	fmt.Println("Starting server in localhost and port 8000")
-	http.HandleFunc("/hello", helloHandler)
-	http.ListenAndServe(":8000", nil)
+	app := fiber.New()
+	app.Get("/", )
+	app.Listen(":3000")
 }
 
-func helloHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Hello from go package")
+
+func init() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("error in loading file .env")
+	}
+	models.Check_database()
+	models.CreateTables()
 }
