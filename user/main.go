@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"satellite/user/models"
+	"satellite/user/routes"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
@@ -11,8 +12,8 @@ import (
 func main() {
 	var ()
 	app := fiber.New()
-	app.Get("/")
-	app.Listen(":3000")
+	routes.SetupRoutes(app)
+	log.Fatal(app.Listen(":3000"))
 }
 
 func init() {
