@@ -4,12 +4,12 @@ import (
 	"satellite/user/models"
 )
 
-type CreateUserParams struct {
-	NationalID  string `json:"nationalID" validate:"required"`
-	PhoneNumber string `json:"phoneNumber" validate:"required"`
+type CreateUserInput struct {
+	NationalID  string `json:"nationalID" validate:"required,len=10"`
+	PhoneNumber string `json:"phoneNumber" validate:"required,len=11"`
 }
 
-func (c *CreateUserParams) NewUserFromParams() *models.User {
+func (c *CreateUserInput) NewUserFromParams() *models.User {
 	return &models.User{
 		NationalID:  c.NationalID,
 		PhoneNumber: c.PhoneNumber,

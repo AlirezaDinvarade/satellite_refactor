@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"satellite/user/handlers"
 	"satellite/user/models"
 	"satellite/user/routes"
 
@@ -9,9 +10,13 @@ import (
 	"github.com/joho/godotenv"
 )
 
+var config = fiber.Config{
+	ErrorHandler: handlers.ErrorHandler,
+}
+
 func main() {
 	var ()
-	app := fiber.New()
+	app := fiber.New(config)
 	routes.SetupRoutes(app)
 	log.Fatal(app.Listen(":3000"))
 }
