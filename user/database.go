@@ -1,9 +1,9 @@
-package models
+package main
 
 import (
 	"log"
 	"os"
-	"satellite/user/types"
+	"satellite/user/models"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -11,7 +11,7 @@ import (
 
 var DB *gorm.DB
 
-func Check_database() {
+func CheckDatabaseConnection() {
 	dsn := os.Getenv("AUTH_DATABASE_URL")
 	var err error
 
@@ -23,7 +23,7 @@ func Check_database() {
 }
 
 func CreateTables() {
-	err := DB.AutoMigrate(&types.User{})
+	err := DB.AutoMigrate(&models.User{})
 	if err != nil {
 		log.Fatal("failed to migrate tables:", err)
 	}

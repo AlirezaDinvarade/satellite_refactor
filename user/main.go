@@ -9,17 +9,17 @@ import (
 )
 
 func main() {
+	var ()
 	app := fiber.New()
-	app.Get("/", )
+	app.Get("/")
 	app.Listen(":3000")
 }
-
 
 func init() {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("error in loading file .env")
 	}
-	models.Check_database()
+	models.CheckDatabaseConnection()
 	models.CreateTables()
 }
