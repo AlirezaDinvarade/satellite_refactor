@@ -24,7 +24,7 @@ var validate = validator.New()
 func (h *UserHandler) HandleCreateUser(c *fiber.Ctx) error {
 	var userParams types.CreateUserInput
 	if err := c.BodyParser(&userParams); err != nil {
-		return err
+		return ErrorInvalidData()
 	}
 
 	if err := validate.Struct(userParams); err != nil {

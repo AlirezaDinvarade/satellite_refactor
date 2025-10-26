@@ -26,6 +26,3 @@ type User struct {
 	Password    string          `gorm:"type:varchar(255)" json:"-"`
 	AccessLevel AccessLevelENUM `gorm:"type:varchar(10);default:'user'" json:"accessLevel"`
 }
-
-
-
