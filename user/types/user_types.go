@@ -6,7 +6,7 @@ import (
 
 type CreateUserInput struct {
 	NationalID  string `json:"nationalID" validate:"required,len=10"`
-	PhoneNumber string `json:"phoneNumber" validate:"required,len=11"`
+	PhoneNumber string `json:"phoneNumber" validate:"required,len=11,startswith09"`
 }
 
 func (c *CreateUserInput) NewUserFromParams() *models.User {

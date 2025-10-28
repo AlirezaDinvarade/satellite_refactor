@@ -28,4 +28,5 @@ func init() {
 	}
 	models.CheckDatabaseConnection()
 	models.CreateTables()
+	models.ConnectRedis()
 }

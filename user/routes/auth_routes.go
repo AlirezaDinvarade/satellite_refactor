@@ -8,8 +8,9 @@ import (
 )
 
 func authRoutes(router fiber.Router) {
-	userHander := handlers.NewUserHandler(models.DB)
-	users := router.Group("/auth")
+	authHandler := handlers.NewAuthHandler(models.DB, models.RedisDB)
+	auth := router.Group("/auth")
 
-	users.Post("/login", userHander.HandleCreateUser)
+	auth.Post("/send-otp", authHandler.SendOTPHandler)
+	auth.Post("/login-otp", authHandler.LoginOTP)
 }

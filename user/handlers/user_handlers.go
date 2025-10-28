@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"satellite/user/types"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )
@@ -19,7 +18,7 @@ func NewUserHandler(userStore *gorm.DB) *UserHandler {
 	}
 }
 
-var validate = validator.New()
+var validate = types.NewValidator()
 
 func (h *UserHandler) HandleCreateUser(c *fiber.Ctx) error {
 	var userParams types.CreateUserInput
