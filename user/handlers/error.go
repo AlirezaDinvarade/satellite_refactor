@@ -45,3 +45,24 @@ func ErrorInternalServerError() Error {
 		Message: "Internal server error",
 	}
 }
+
+func ErrorActiveOTP() Error {
+	return Error{
+		Code:    http.StatusBadRequest,
+		Message: "you have active otp",
+	}
+}
+
+func ErrorExpireOTP() Error {
+	return Error{
+		Code:    http.StatusBadRequest,
+		Message: "Your OTP code has been expired",
+	}
+}
+
+func ErrorMissMatchOTP() Error {
+	return Error{
+		Code:    http.StatusBadRequest,
+		Message: "Your OTP code is miss match",
+	}
+}
