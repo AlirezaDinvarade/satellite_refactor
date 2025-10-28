@@ -71,17 +71,13 @@ func (h *AuthHandler) SendOTPHandler(c *fiber.Ctx) error {
 
 func (h *AuthHandler) LoginOTP(c *fiber.Ctx) error {
 	var params types.OTPLoginInput
-	if err := c.BodyParser(&params); err != nil {
-		return ErrorInvalidData()
-	}
-
-	if err := validate.Struct(params); err != nil {
+	if err := c.BodyParser(&params); err != nil || validate.Struct(params) != nil {
 		return ErrorInvalidData()
 	}
 
 	key := fmt.Sprintf("otp:%s", params.PhoneNumber)
 	OTPStored, err := h.CacheStore.Get(c.Context(), key).Result()
-	if OTPStored == "" {
+	if OTPStored == "" || err != nil {
 		return ErrorExpireOTP()
 	}
 	if OTPStored != params.Otp {
@@ -89,9 +85,7 @@ func (h *AuthHandler) LoginOTP(c *fiber.Ctx) error {
 	}
 
 	var user *models.User
-	if err = h.DatabaseStore.FirstOrCreate(&user, models.User{
-		PhoneNumber: params.PhoneNumber,
-	}).Error; err != nil {
+	if err = h.DatabaseStore.FirstOrCreate(&user, models.User{PhoneNumber: params.PhoneNumber}).Error; err != nil {
 		return ErrorInternalServerError()
 	}
 
