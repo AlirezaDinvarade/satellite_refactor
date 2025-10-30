@@ -15,7 +15,6 @@ var config = fiber.Config{
 }
 
 func main() {
-	var ()
 	app := fiber.New(config)
 	routes.SetupRoutes(app)
 	log.Fatal(app.Listen(":3000"))

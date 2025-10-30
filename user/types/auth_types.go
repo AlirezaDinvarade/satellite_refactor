@@ -25,3 +25,8 @@ type LoginResponse struct {
 	Token string      `json:"token"`
 	User  models.User `json:"user"`
 }
+
+type SetPasswordInput struct {
+	Password        string `json:"password"`
+	ConfirmPassword string `json:"confim_password"`
+}

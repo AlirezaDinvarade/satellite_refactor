@@ -14,7 +14,6 @@ func CheckDatabaseConnection() {
 	dsn := os.Getenv("AUTH_DATABASE_URL")
 	var err error
 
-	// TODO: use once for open database connection
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatal("faild to connect database: ", err)

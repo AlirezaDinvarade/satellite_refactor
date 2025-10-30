@@ -12,16 +12,15 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
 
 type AuthHandler struct {
 	DatabaseStore *gorm.DB
-	CacheStore    *redis.Client
+	CacheStore    models.RedisClient
 }
 
-func NewAuthHandler(authStore *gorm.DB, cacheStore *redis.Client) *AuthHandler {
+func NewAuthHandler(authStore *gorm.DB, cacheStore models.RedisClient) *AuthHandler {
 	return &AuthHandler{
 		DatabaseStore: authStore,
 		CacheStore:    cacheStore,
@@ -39,7 +38,7 @@ func (h *AuthHandler) SendOTPHandler(c *fiber.Ctx) error {
 	}
 
 	key := fmt.Sprintf("otp:%s", params.PhoneNumber)
-	value, err := h.CacheStore.Get(c.Context(), key).Result()
+	value, err := h.CacheStore.Get(c.Context(), key)
 	if value != "" {
 		return ErrorActiveOTP()
 	}
@@ -57,8 +56,7 @@ func (h *AuthHandler) SendOTPHandler(c *fiber.Ctx) error {
 	}
 
 	otp := strconv.Itoa(rand.Intn(90000) + 10000)
-	err = h.CacheStore.SetEx(c.Context(), key, otp, time.Minute*2).Err()
-	if err != nil {
+	if err = h.CacheStore.SetEx(c.Context(), key, []byte(otp), time.Minute*2); err != nil {
 		return ErrorInternalServerError()
 	}
 
@@ -69,14 +67,14 @@ func (h *AuthHandler) SendOTPHandler(c *fiber.Ctx) error {
 
 }
 
-func (h *AuthHandler) LoginOTP(c *fiber.Ctx) error {
+func (h *AuthHandler) LoginOTPHandler(c *fiber.Ctx) error {
 	var params types.OTPLoginInput
 	if err := c.BodyParser(&params); err != nil || validate.Struct(params) != nil {
 		return ErrorInvalidData()
 	}
 
 	key := fmt.Sprintf("otp:%s", params.PhoneNumber)
-	OTPStored, err := h.CacheStore.Get(c.Context(), key).Result()
+	OTPStored, err := h.CacheStore.Get(c.Context(), key)
 	if OTPStored == "" || err != nil {
 		return ErrorExpireOTP()
 	}
@@ -101,8 +99,7 @@ func (h *AuthHandler) LoginOTP(c *fiber.Ctx) error {
 		return ErrorInternalServerError()
 	}
 
-	err = h.CacheStore.Del(c.Context(), key).Err()
-	if err != nil {
+	if err = h.CacheStore.Del(c.Context(), key); err != nil {
 		return ErrorInternalServerError()
 	}
 
@@ -111,3 +108,15 @@ func (h *AuthHandler) LoginOTP(c *fiber.Ctx) error {
 		User:  *user,
 	})
 }
+
+// func (h *AuthHandler) SetPasswordHandler(c *fiber.Ctx) error {
+// 	var params types.SetPasswordInput
+// 	if err := c.BodyParser(&params); err != nil {
+// 		return ErrorInvalidData()
+// 	}
+
+// 	if params.Password != params.ConfirmPassword {
+// 		return ErrorMissMatchPasswords()
+// 	}
+
+// }

@@ -66,3 +66,10 @@ func ErrorMissMatchOTP() Error {
 		Message: "Your OTP code is miss match",
 	}
 }
+
+func ErrorMissMatchPasswords() Error {
+	return Error{
+		Code:    http.StatusBadRequest,
+		Message: "Your passwords is not match together",
+	}
+}

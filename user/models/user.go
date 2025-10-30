@@ -1,6 +1,8 @@
 package models
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"time"
 
 	"github.com/google/uuid"
@@ -25,4 +27,9 @@ type User struct {
 	UpdatedAt   time.Time       `gorm:"type:timestamp" json:"updatedAt"`
 	Password    string          `gorm:"type:varchar(255)" json:"-"`
 	AccessLevel AccessLevelENUM `gorm:"type:varchar(10);default:'user'" json:"accessLevel"`
+}
+
+func PasswordHash(password string) string {
+	hash := sha256.Sum256([]byte(password))
+	return hex.EncodeToString(hash[:])
 }
