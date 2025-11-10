@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"net/http"
 	"satellite/user/models"
+	"satellite/user/stores"
 	"satellite/user/types"
 	"strconv"
 	"time"
@@ -17,10 +18,10 @@ import (
 
 type AuthHandler struct {
 	DatabaseStore *gorm.DB
-	CacheStore    models.RedisClient
+	CacheStore    stores.RedisClient
 }
 
-func NewAuthHandler(authStore *gorm.DB, cacheStore models.RedisClient) *AuthHandler {
+func NewAuthHandler(authStore *gorm.DB, cacheStore stores.RedisClient) *AuthHandler {
 	return &AuthHandler{
 		DatabaseStore: authStore,
 		CacheStore:    cacheStore,
@@ -94,7 +95,7 @@ func (h *AuthHandler) LoginOTPHandler(c *fiber.Ctx) error {
 	residValue, err := json.Marshal(session)
 	token := "some-random-token"
 	activeSessionTTL := 24 * time.Hour
-	err = h.CacheStore.SetEx(c.Context(), token, residValue, activeSessionTTL).Err()
+	err = h.CacheStore.SetEx(c.Context(), token, residValue, activeSessionTTL)
 	if err != nil {
 		return ErrorInternalServerError()
 	}

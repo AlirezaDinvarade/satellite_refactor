@@ -17,6 +17,7 @@ const (
 	ExpertLevel AccessLevelENUM = "expert"
 )
 
+
 type User struct {
 	ID          uuid.UUID       `gorm:"type:uuid;default:uuid_generate_v4();primaryKey" json:"id"`
 	FullName    string          `gorm:"type:varchar(100)" json:"fullName"`
@@ -33,3 +34,5 @@ func PasswordHash(password string) string {
 	hash := sha256.Sum256([]byte(password))
 	return hex.EncodeToString(hash[:])
 }
+
+

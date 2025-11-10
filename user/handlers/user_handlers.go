@@ -2,19 +2,19 @@ package handlers
 
 import (
 	"net/http"
+	"satellite/user/stores"
 	"satellite/user/types"
 
 	"github.com/gofiber/fiber/v2"
-	"gorm.io/gorm"
 )
 
 type UserHandler struct {
-	store *gorm.DB
+	store *stores.Store
 }
 
-func NewUserHandler(userStore *gorm.DB) *UserHandler {
+func NewUserHandler(store *stores.Store) *UserHandler {
 	return &UserHandler{
-		store: userStore,
+		store: store,
 	}
 }
 
@@ -31,7 +31,8 @@ func (h *UserHandler) HandleCreateUser(c *fiber.Ctx) error {
 	}
 
 	user := userParams.NewUserFromParams()
-	if err := h.store.Create(&user).Error; err != nil {
+	user, err := h.store.User.InsertUser(c.Context(), user)
+	if err != nil {
 		return ErrorInternalServerError()
 	}
 

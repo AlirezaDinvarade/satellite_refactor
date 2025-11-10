@@ -1,4 +1,4 @@
-package models
+package stores
 
 import (
 	"context"
@@ -11,10 +11,7 @@ import (
 )
 
 var (
-	REDIS_HOST     = os.Getenv("REDIS_HOST")
-	REDIS_PORT     = os.Getenv("REDIS_PORT")
-	REDIS_PASSWORD = os.Getenv("REDIS_PASSWORD")
-	RedisDB        *redis.Client
+	RedisDB *redis.Client
 )
 
 type RedisAdaptor struct {
@@ -39,8 +36,12 @@ func (r *RedisAdaptor) Del(ctx context.Context, key string) error {
 	return r.Client.Del(ctx, key).Err()
 }
 
-
 func ConnectRedis() {
+	var (
+		REDIS_HOST     = os.Getenv("REDIS_HOST")
+		REDIS_PORT     = os.Getenv("REDIS_PORT")
+		REDIS_PASSWORD = os.Getenv("REDIS_PASSWORD")
+	)
 	RedisDB = redis.NewClient(&redis.Options{
 		Addr:     fmt.Sprintf("%s:%s", REDIS_HOST, REDIS_PORT),
 		Password: REDIS_PASSWORD,

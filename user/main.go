@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 	"satellite/user/handlers"
-	"satellite/user/models"
 	"satellite/user/routes"
+	"satellite/user/stores"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
@@ -25,7 +25,7 @@ func init() {
 	if err != nil {
 		log.Fatal("error in loading file .env")
 	}
-	models.CheckDatabaseConnection()
-	models.CreateTables()
-	models.ConnectRedis()
+	stores.CheckDatabaseConnection()
+	stores.CreateTables()
+	stores.ConnectRedis()
 }
