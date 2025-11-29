@@ -9,10 +9,11 @@ import (
 
 var (
 	userStore    = stores.NewPostgresUserStore(stores.DB)
-	redisAdaptor = &stores.RedisAdaptor{Client: stores.RedisDB}
-	store        = &stores.Store{
+	redisAdaptor = stores.NewRedisAdaptor()
+	store = &stores.Store{
 		User: userStore,
 	}
+	
 	userHander  = handlers.NewUserHandler(store)
 	authHandler = handlers.NewAuthHandler(stores.DB, redisAdaptor)
 )
