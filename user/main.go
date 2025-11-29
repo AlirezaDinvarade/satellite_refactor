@@ -2,22 +2,22 @@ package main
 
 import (
 	"log"
-	"satellite/user/handlers"
+	"net/http"
+	"satellite/user/middlewares"
 	"satellite/user/routes"
 	"satellite/user/stores"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 )
 
-var config = fiber.Config{
-	ErrorHandler: handlers.ErrorHandler,
-}
-
 func main() {
-	app := fiber.New(config)
-	routes.SetupRoutes(app)
-	log.Fatal(app.Listen(":3000"))
+	router := mux.NewRouter()
+	router.Use(middlewares.LoggingMiddleware)
+	router.Use(middlewares.AuthMiddleware)
+
+	routes.SetupRoutes(router)
+	log.Fatal(http.ListenAndServe(":3000", router))
 }
 
 func init() {

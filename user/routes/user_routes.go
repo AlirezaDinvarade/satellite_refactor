@@ -1,10 +1,10 @@
 package routes
 
 import (
-	"github.com/gofiber/fiber/v2"
+	"github.com/gorilla/mux"
 )
 
-func userRoutes(router fiber.Router) {
-	users := router.Group("/users")
-	users.Post("/create", userHander.HandleCreateUser)
+func userRoutes(router *mux.Router) {
+	users := router.PathPrefix("/users").Subrouter()
+	users.HandleFunc("/create", userHander.HandleCreateUser).Methods("POST")
 }

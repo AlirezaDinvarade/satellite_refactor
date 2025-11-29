@@ -4,21 +4,21 @@ import (
 	"satellite/user/handlers"
 	"satellite/user/stores"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gorilla/mux"
 )
 
 var (
-	userStore = stores.NewPostgresUserStore(stores.DB)
-	store     = &stores.Store{
+	userStore    = stores.NewPostgresUserStore(stores.DB)
+	redisAdaptor = &stores.RedisAdaptor{Client: stores.RedisDB}
+	store        = &stores.Store{
 		User: userStore,
 	}
-	userHander = handlers.NewUserHandler(store)
+	userHander  = handlers.NewUserHandler(store)
+	authHandler = handlers.NewAuthHandler(stores.DB, redisAdaptor)
 )
 
-func SetupRoutes(app *fiber.App) {
-	api := app.Group("/api")
-
+func SetupRoutes(router *mux.Router) {
+	api := router.PathPrefix("/api").Subrouter()
 	userRoutes(api)
 	authRoutes(api)
-
 }

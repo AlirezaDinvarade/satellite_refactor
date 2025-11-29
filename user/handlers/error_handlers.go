@@ -1,75 +1,36 @@
 package handlers
 
 import (
+	"encoding/json"
 	"net/http"
-
-	"github.com/gofiber/fiber/v2"
 )
 
-func ErrorHandler(c *fiber.Ctx, err error) error {
-	if apiError, ok := err.(Error); ok {
-		return c.Status(apiError.Code).JSON(apiError)
-	}
-
-	apiError := NewError(http.StatusInternalServerError, err.Error())
-	return c.Status(apiError.Code).JSON(apiError)
-
+func WriteJson(rw http.ResponseWriter, Code int, v interface{}) {
+	rw.WriteHeader(Code)
+	rw.Header().Add("Content-Type", "application/json")
+	json.NewEncoder(rw).Encode(v)
 }
 
-type Error struct {
-	Code    int    `json:"code"`
-	Message string `json:"message"`
+func ErrorInvalidData(rw http.ResponseWriter) {
+	WriteJson(rw, http.StatusBadRequest, "input values are not valid")
 }
 
-func (e Error) Error() string {
-	return e.Message
+func ErrorInternalServerError(rw http.ResponseWriter) {
+	WriteJson(rw, http.StatusInternalServerError, "Internal server error")
 }
 
-func NewError(code int, message string) Error {
-	return Error{
-		Code:    code,
-		Message: message,
-	}
+func ErrorActiveOTP(rw http.ResponseWriter) {
+	WriteJson(rw, http.StatusBadRequest, "you have active otp")
 }
 
-func ErrorInvalidData() Error {
-	return Error{
-		Code:    http.StatusBadRequest,
-		Message: "input values are not valid",
-	}
+func ErrorExpireOTP(rw http.ResponseWriter) {
+	WriteJson(rw, http.StatusBadRequest, "Your OTP code has been expired")
 }
 
-func ErrorInternalServerError() Error {
-	return Error{
-		Code:    http.StatusInternalServerError,
-		Message: "Internal server error",
-	}
+func ErrorMissMatchOTP(rw http.ResponseWriter) {
+	WriteJson(rw, http.StatusBadRequest, "Your OTP code is miss match")
 }
 
-func ErrorActiveOTP() Error {
-	return Error{
-		Code:    http.StatusBadRequest,
-		Message: "you have active otp",
-	}
-}
-
-func ErrorExpireOTP() Error {
-	return Error{
-		Code:    http.StatusBadRequest,
-		Message: "Your OTP code has been expired",
-	}
-}
-
-func ErrorMissMatchOTP() Error {
-	return Error{
-		Code:    http.StatusBadRequest,
-		Message: "Your OTP code is miss match",
-	}
-}
-
-func ErrorMissMatchPasswords() Error {
-	return Error{
-		Code:    http.StatusBadRequest,
-		Message: "Your passwords is not match together",
-	}
+func ErrorMissMatchPasswords(rw http.ResponseWriter) {
+	WriteJson(rw, http.StatusBadRequest, "Your passwords is not match together")
 }

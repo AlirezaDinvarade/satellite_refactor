@@ -1,11 +1,10 @@
 package handlers
 
 import (
+	"encoding/json"
 	"net/http"
 	"satellite/user/stores"
 	"satellite/user/types"
-
-	"github.com/gofiber/fiber/v2"
 )
 
 type UserHandler struct {
@@ -20,21 +19,23 @@ func NewUserHandler(store *stores.Store) *UserHandler {
 
 var validate = types.NewValidator()
 
-func (h *UserHandler) HandleCreateUser(c *fiber.Ctx) error {
+func (h *UserHandler) HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 	var userParams types.CreateUserInput
-	if err := c.BodyParser(&userParams); err != nil {
-		return ErrorInvalidData()
+	if err := json.NewDecoder(r.Body).Decode(&userParams); err != nil {
+		ErrorInvalidData(w)
+		return
 	}
 
 	if err := validate.Struct(userParams); err != nil {
-		return ErrorInvalidData()
+		ErrorInvalidData(w)
+		return
 	}
 
 	user := userParams.NewUserFromParams()
-	user, err := h.store.User.InsertUser(c.Context(), user)
+	user, err := h.store.User.InsertUser(r.Context(), user)
 	if err != nil {
-		return ErrorInternalServerError()
+		ErrorInternalServerError(w)
+		return
 	}
 
-	return c.Status(http.StatusOK).JSON(user)
 }

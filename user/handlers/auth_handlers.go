@@ -12,7 +12,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )
 
@@ -28,64 +27,74 @@ func NewAuthHandler(authStore *gorm.DB, cacheStore stores.RedisClient) *AuthHand
 	}
 }
 
-func (h *AuthHandler) SendOTPHandler(c *fiber.Ctx) error {
+func (h *AuthHandler) SendOTPHandler(w http.ResponseWriter, r *http.Request) {
 	var params types.SendOTPInput
-	if err := c.BodyParser(&params); err != nil {
-		return ErrorInvalidData()
+	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
+		ErrorInvalidData(w)
+		return
 	}
 
 	if err := validate.Struct(params); err != nil {
-		return ErrorInvalidData()
+		ErrorInvalidData(w)
+		return
 	}
 
 	key := fmt.Sprintf("otp:%s", params.PhoneNumber)
-	value, err := h.CacheStore.Get(c.Context(), key)
+	value, err := h.CacheStore.Get(r.Context(), key)
 	if value != "" {
-		return ErrorActiveOTP()
+		ErrorActiveOTP(w)
+		return
 	}
 
 	var user *models.User
 	if err := h.DatabaseStore.Where("phone_number = ?", params.PhoneNumber).First(&user).Error; !errors.Is(err, gorm.ErrRecordNotFound) {
-		return ErrorInternalServerError()
+		ErrorInternalServerError(w)
+		return
 	}
 
 	if user != nil && user.Password != "" {
-		return c.Status(http.StatusOK).JSON(types.SendOTPResponse{
+		WriteJson(w, http.StatusOK, types.SendOTPResponse{
 			Otp:         nil,
 			HasPassword: true,
 		})
+		return
 	}
 
 	otp := strconv.Itoa(rand.Intn(90000) + 10000)
-	if err = h.CacheStore.SetEx(c.Context(), key, []byte(otp), time.Minute*2); err != nil {
-		return ErrorInternalServerError()
+	if err = h.CacheStore.SetEx(r.Context(), key, []byte(otp), time.Minute*2); err != nil {
+		ErrorInternalServerError(w)
+		return
 	}
 
-	return c.Status(http.StatusOK).JSON(types.SendOTPResponse{
+	WriteJson(w, http.StatusOK, types.SendOTPResponse{
 		Otp:         &otp,
 		HasPassword: bool(user != nil && user.Password != ""),
 	})
 
 }
 
-func (h *AuthHandler) LoginOTPHandler(c *fiber.Ctx) error {
+func (h *AuthHandler) LoginOTPHandler(w http.ResponseWriter, r *http.Request) {
 	var params types.OTPLoginInput
-	if err := c.BodyParser(&params); err != nil || validate.Struct(params) != nil {
-		return ErrorInvalidData()
+	if err := json.NewDecoder(r.Body).Decode(&params); err != nil || validate.Struct(params) != nil {
+		ErrorInvalidData(w)
+		return
 	}
 
 	key := fmt.Sprintf("otp:%s", params.PhoneNumber)
-	OTPStored, err := h.CacheStore.Get(c.Context(), key)
+	OTPStored, err := h.CacheStore.Get(r.Context(), key)
 	if OTPStored == "" || err != nil {
-		return ErrorExpireOTP()
+		ErrorExpireOTP(w)
+		return
 	}
 	if OTPStored != params.Otp {
-		return ErrorMissMatchOTP()
+		ErrorMissMatchOTP(w)
+		return
 	}
 
 	var user *models.User
 	if err = h.DatabaseStore.FirstOrCreate(&user, models.User{PhoneNumber: params.PhoneNumber}).Error; err != nil {
-		return ErrorInternalServerError()
+		ErrorInternalServerError(w)
+		return
 	}
 
 	session := types.RedisSessionData{
@@ -95,29 +104,18 @@ func (h *AuthHandler) LoginOTPHandler(c *fiber.Ctx) error {
 	residValue, err := json.Marshal(session)
 	token := "some-random-token"
 	activeSessionTTL := 24 * time.Hour
-	err = h.CacheStore.SetEx(c.Context(), token, residValue, activeSessionTTL)
+	err = h.CacheStore.SetEx(r.Context(), token, residValue, activeSessionTTL)
 	if err != nil {
-		return ErrorInternalServerError()
+		ErrorInternalServerError(w)
+		return
 	}
 
-	if err = h.CacheStore.Del(c.Context(), key); err != nil {
-		return ErrorInternalServerError()
+	if err = h.CacheStore.Del(r.Context(), key); err != nil {
+		ErrorInternalServerError(w)
 	}
 
-	return c.Status(http.StatusOK).JSON(types.LoginResponse{
+	WriteJson(w, http.StatusOK, types.LoginResponse{
 		Token: token,
 		User:  *user,
 	})
 }
-
-// func (h *AuthHandler) SetPasswordHandler(c *fiber.Ctx) error {
-// 	var params types.SetPasswordInput
-// 	if err := c.BodyParser(&params); err != nil {
-// 		return ErrorInvalidData()
-// 	}
-
-// 	if params.Password != params.ConfirmPassword {
-// 		return ErrorMissMatchPasswords()
-// 	}
-
-// }
